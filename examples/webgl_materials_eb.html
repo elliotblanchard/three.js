@@ -48,6 +48,21 @@
 				var texture = new THREE.Texture( generateTexture() );
 				texture.needsUpdate = true;
 
+				for (var i = 0; i < 16; i++) {
+					materials.push( new THREE.MeshLambertMaterial( { color: 0x333333 } ) )
+				}
+
+				for (var i = 0; i < 16; i++) {
+					if (Math.random() > 0.5) 
+					{
+						materials[i].emissive.setHSL(0.0, 0.0, 0.0)
+					}
+					else 
+					{
+						materials[i].emissive.setHSL(0.0, 0.0, 1.0)
+					}
+				}
+				/*
 				materials.push( new THREE.MeshLambertMaterial( { color: 0x003300 } ) );
 				materials.push( new THREE.MeshLambertMaterial( { color: 0x006600 } ) );
 				materials.push( new THREE.MeshLambertMaterial( { color: 0x009900 } ) );
@@ -63,7 +78,8 @@
 				materials.push( new THREE.MeshLambertMaterial( { color: 0x330033 } ) );
 				materials.push( new THREE.MeshLambertMaterial( { color: 0x660066 } ) );
 				materials.push( new THREE.MeshLambertMaterial( { color: 0x990099 } ) );
-                materials.push( new THREE.MeshLambertMaterial( { color: 0xaa00aa } ) );                                           
+                materials.push( new THREE.MeshLambertMaterial( { color: 0xaa00aa } ) );  
+				*/                                         
 
 
 				// Spheres geometry
@@ -197,6 +213,9 @@
 
 				}
 
+
+
+				/*
 				materials[ materials.length - 1 ].emissive.setHSL( 0.05, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
 				materials[ materials.length - 2 ].emissive.setHSL( 0.10, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
 				materials[ materials.length - 3 ].emissive.setHSL( 0.15, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
@@ -213,7 +232,7 @@
 				materials[ materials.length - 14 ].emissive.setHSL( 0.70, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
 				materials[ materials.length - 15 ].emissive.setHSL( 0.75, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
 				materials[ materials.length - 16 ].emissive.setHSL( 0.80, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
-
+				*/
 
 
 				pointLight.position.x = Math.sin( timer * 7 ) * 300;
@@ -223,6 +242,21 @@
 				renderer.render( scene, camera );
 
 			}
+
+			document.addEventListener('keydown', function(event) {
+				if (event.code == 'Space') {
+					for (var i = 0; i < 16; i++) {
+						if (Math.random() > 0.5) 
+						{
+							materials[i].emissive.setHSL(0.0, 0.0, 0.0)
+						}
+						else 
+						{
+							materials[i].emissive.setHSL(0.0, 0.0, 1.0)
+						}
+					}
+				}
+			});			
 
 		</script>
 
