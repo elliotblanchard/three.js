@@ -17,9 +17,16 @@
 
 			import Stats from './jsm/libs/stats.module.js';
 
-			const gridDimension = 6;
-			const tileDimension = 100;
+			const gridDimension = 25;
+			const tileDimension = 25;
 			const tileDepth = 10;
+
+			let edges = {
+				topRow: [],
+				rightRow: [],
+				bottomRow: [],
+				leftRow: []
+			};
 
 			let container, stats;
 
@@ -38,6 +45,37 @@
 			init();
 			animate();
 
+			function setEdges(gridDimension) {			
+				//This should be a method of the edges object that runs on object init
+				for (var i = 0; i < (gridDimension ** 2); i++) {
+					let j = i+1;
+					if (i < gridDimension) {
+						edges.topRow.push(i)
+					}
+					if (i > ((gridDimension ** 2)-gridDimension)) {
+						edges.bottomRow.push(i)
+					}
+					if (j % gridDimension === 0) {
+						edges.rightRow.push(i)
+					}
+					if (i % gridDimension === 0) {
+						edges.leftRow.push(i)
+					}					
+				}
+			}
+
+			function testEdges(gridDimension) {
+				const allEdges = [...edges.topRow, ...edges.rightRow, ...edges.bottomRow, ...edges.leftRow];
+				for (let i = 0; i < (gridDimension ** 2); i++) {
+					if (allEdges.includes(i)) {
+						materials[i].emissive.setHSL(0.0, 0.0, 1.0)
+					}
+					else {
+						materials[i].emissive.setHSL(0.0, 0.0, 0.0)
+					}
+				}
+			}	
+
 			function setGeo() {
 				for (let i = 0; i < (gridDimension ** 2); i++) {
 					if (cellsMatrix[i] == 1) {
@@ -47,7 +85,7 @@
 						materials[i].emissive.setHSL(0.0, 0.0, 0.0)
 					}
 				}
-			}
+			}		
 
 			function reverseCells() {
 				for (let i = 0; i < (gridDimension ** 2); i++) {
@@ -77,10 +115,10 @@
 					20 21 22 23 24
 				*/
 
-				const topRow = [0,1,2,3];
-				const rightRow = [3,7,11,15];
-				const bottomRow = [12,13,14,15];
-				const leftRow = [0,4,8,12];
+				//const topRow = [0,1,2,3];
+				//const rightRow = [3,7,11,15];
+				//const bottomRow = [12,13,14,15];
+				//const leftRow = [0,4,8,12];
 
 				let neighborsMatrix = [];
 
@@ -145,15 +183,17 @@
 				scene = new THREE.Scene();
 
 				// Grid
-				let helper = new THREE.GridHelper( 1000, 40, 0x303030, 0x303030 );
-				helper.position.y = - 75;
-				scene.add( helper );
+				//let helper = new THREE.GridHelper( 1000, 40, 0x303030, 0x303030 );
+				//helper.position.y = - 75;
+				//scene.add( helper );
 
 				// Materials
 				for (let i = 0; i < (gridDimension ** 2); i++) {
 					materials.push( new THREE.MeshLambertMaterial( { color: 0x333333 } ) )
 				}
 
+				setEdges(gridDimension);
+				testEdges(gridDimension);
 				//setGeo();
 
 				/*
