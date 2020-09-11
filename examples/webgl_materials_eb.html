@@ -17,6 +17,10 @@
 
 			import Stats from './jsm/libs/stats.module.js';
 
+			const gridDimension = 6;
+			const tileDimension = 100;
+			const tileDepth = 10;
+
 			let container, stats;
 
 			let camera, scene, renderer;
@@ -35,7 +39,7 @@
 			animate();
 
 			function setGeo() {
-				for (let i = 0; i < 16; i++) {
+				for (let i = 0; i < (gridDimension ** 2); i++) {
 					if (cellsMatrix[i] == 1) {
 						materials[i].emissive.setHSL(0.0, 0.0, 1.0)
 					}
@@ -46,7 +50,7 @@
 			}
 
 			function reverseCells() {
-				for (let i = 0; i < 16; i++) {
+				for (let i = 0; i < (gridDimension ** 2); i++) {
 					if (cellsMatrix[i] == 1) {
 						cellsMatrix[i] = 0
 					}
@@ -59,6 +63,19 @@
 			function evolveCells() {
 				//If a cell is on,  and has three or more neighbors, it turns off
 				//If a cell is off, and has no neighbors,            it turns on 
+
+				/*
+					0  1  2  3
+					4  5  6  7
+					8  9  10 11
+					12 13 14 15
+
+					0  1  2  3  4
+					5  6  7  8  9
+					10 11 12 13 14
+					15 16 17 18 19
+					20 21 22 23 24
+				*/
 
 				const topRow = [0,1,2,3];
 				const rightRow = [3,7,11,15];
@@ -133,11 +150,11 @@
 				scene.add( helper );
 
 				// Materials
-				for (let i = 0; i < 16; i++) {
+				for (let i = 0; i < (gridDimension ** 2); i++) {
 					materials.push( new THREE.MeshLambertMaterial( { color: 0x333333 } ) )
 				}
 
-				setGeo();
+				//setGeo();
 
 				/*
 				materials.push( new THREE.MeshLambertMaterial( { color: 0x003300 } ) );
@@ -162,7 +179,7 @@
 				// Geometry
 
 				//let geometry = new THREE.SphereBufferGeometry( 70, 32, 16 );
-                let geometry = new THREE.BoxGeometry(110,10,110);
+                let geometry = new THREE.BoxGeometry(tileDimension,tileDepth,tileDimension);
 
 				for ( let i = 0, l = materials.length; i < l; i ++ ) {
 
@@ -207,8 +224,8 @@
 
 				let mesh = new THREE.Mesh( geometry, material );
 
-				mesh.position.x = ( objects.length % 4 ) * 200 - 300;
-				mesh.position.z = Math.floor( objects.length / 4 ) * 200 - 325;
+				mesh.position.x = ( objects.length % gridDimension ) * (tileDimension*1.2) - 300;
+				mesh.position.z = Math.floor( objects.length / gridDimension ) * (tileDimension*1.2) - 325;
 
 				/*
 				mesh.rotation.x = Math.random() * 200 - 100;
@@ -262,6 +279,7 @@
 
 				}
 
+				
 				materials[ materials.length - 1 ].emissive.setHSL( 0.05, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
 				materials[ materials.length - 2 ].emissive.setHSL( 0.10, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
 				materials[ materials.length - 3 ].emissive.setHSL( 0.15, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
