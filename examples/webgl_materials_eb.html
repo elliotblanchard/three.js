@@ -17,9 +17,9 @@
 
 			import Stats from './jsm/libs/stats.module.js';
 
-			const gridDimension = 25;
-			const tileDimension = 25;
-			const tileDepth = 10;
+			const gridDimension = 50;
+			const tileDimension = 10;
+			const tileDepth = 20;
 
 			let edges = {
 				topRow: [],
@@ -177,8 +177,11 @@
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
-				camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-				camera.position.set( 0, 1200, 0 );
+				camera = new THREE.PerspectiveCamera( 30, window.innerWidth / window.innerHeight, 1, 2000 );
+				camera.position.set( 0, 1500, 0 );
+				camera.up = new THREE.Vector3(1,0,1);
+				camera.lookAt(new THREE.Vector3(0,0,0));
+				
 
 				scene = new THREE.Scene();
 
@@ -193,7 +196,7 @@
 				}
 
 				setEdges(gridDimension);
-				testEdges(gridDimension);
+				//testEdges(gridDimension);
 				//setGeo();
 
 				/*
@@ -264,14 +267,14 @@
 
 				let mesh = new THREE.Mesh( geometry, material );
 
-				mesh.position.x = ( objects.length % gridDimension ) * (tileDimension*1.2) - 300;
-				mesh.position.z = Math.floor( objects.length / gridDimension ) * (tileDimension*1.2) - 325;
+				mesh.position.x = ( objects.length % gridDimension ) * (tileDimension*1.1) - 280;
+				mesh.position.z = Math.floor( objects.length / gridDimension ) * (tileDimension*1.1) - 280;
 
-				/*
-				mesh.rotation.x = Math.random() * 200 - 100;
-				mesh.rotation.y = Math.random() * 200 - 100;
-				mesh.rotation.z = Math.random() * 200 - 100;
-				*/
+				
+				//mesh.rotation.x = 45;
+				//mesh.rotation.y = 0;
+				//mesh.rotation.z = 45;
+				
 
 				objects.push( mesh );
 
@@ -307,7 +310,7 @@
 				//camera.position.x = Math.cos( timer ) * 1000;
 				//camera.position.z = Math.sin( timer ) * 1000;
 
-				camera.lookAt( scene.position );
+			 	//camera.lookAt( scene.position );
 
 				/*
 				for ( let i = 0, l = objects.length; i < l; i ++ ) {
@@ -340,7 +343,8 @@
 
 
 				pointLight.position.x = Math.sin( timer * 7 ) * 300;
-				pointLight.position.y = Math.cos( timer * 5 ) * 400;
+				//pointLight.position.y = Math.cos( timer * 5 ) * 400;
+				pointLight.position.y = 100;
 				pointLight.position.z = Math.cos( timer * 3 ) * 300;
 
 				renderer.render( scene, camera );
