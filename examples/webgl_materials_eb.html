@@ -35,12 +35,25 @@
 
 			let objects = [], materials = [];
 
-			let cellsMatrix = [
-				1, 0, 0, 0,
-				0, 1, 0, 0,
-				0, 0, 1, 0,
-				0, 0, 0, 1
-			];
+			let cell = {
+				h: 0.0,
+				s: 0.0,
+				l: 0.0,
+				age: 0
+			}
+
+			let cellsMatrix = Array(gridDimension ** 2)
+			
+			for (var i = 0; i < cellsMatrix.length; i++) {
+				cellsMatrix[i] = {h: 0.0, s: 0.0, l: 0.0, age: 0}
+			}
+			
+			//let cellsMatrix = [
+			//	1, 0, 0, 0,
+			//	0, 1, 0, 0,
+			//	0, 0, 1, 0,
+			//	0, 0, 0, 1
+			//];
 
 			init();
 			animate();
@@ -76,27 +89,39 @@
 				}
 			}	
 
+			function randomColor(cellsMatrix,probability) {
+				//Sets a percentage of the cells to a random color.
+				//Probability is the chance of the change being applied to a cell (0-1)
+				for (let i = 0; i < (gridDimension ** 2); i++) {
+					if (Math.random() > probability) {
+						cellsMatrix[i].h = Math.random();
+						cellsMatrix[i].s = Math.random();
+						cellsMatrix[i].l = Math.random();
+						cellsMatrix[i].age = 0;
+					}
+				}
+				return cellsMatrix
+			}
+
 			function setGeo() {
 				for (let i = 0; i < (gridDimension ** 2); i++) {
-					if (cellsMatrix[i] == 1) {
-						materials[i].emissive.setHSL(0.0, 0.0, 1.0)
-					}
-					else {
-						materials[i].emissive.setHSL(0.0, 0.0, 0.0)
-					}
+					//console.log(`cellsMatrix length is: ${cellsMatrix.length}`);
+					//console.log(`Cell ${i} is: ${cellsMatrix[i].h}, ${cellsMatrix[i].s}, ${cellsMatrix[i].l}`);
+					//console.log(`Materials length is: ${materials.length}`);
+					materials[i].emissive.setHSL(cellsMatrix[i].h, cellsMatrix[i].s, cellsMatrix[i].l)
 				}
 			}		
 
-			function reverseCells() {
-				for (let i = 0; i < (gridDimension ** 2); i++) {
-					if (cellsMatrix[i] == 1) {
-						cellsMatrix[i] = 0
-					}
-					else {
-						cellsMatrix[i] = 1
-					}
-				}
-			}
+			//function reverseCells() {
+			//	for (let i = 0; i < (gridDimension ** 2); i++) {
+			//		if (cellsMatrix[i] == 1) {
+			//			cellsMatrix[i] = 0
+			//		}
+			//		else {
+			//			cellsMatrix[i] = 1
+			//		}
+			//	}
+			//}
 
 			function evolveCells() {
 				//If a cell is on,  and has three or more neighbors, it turns off
@@ -197,7 +222,7 @@
 
 				setEdges(gridDimension);
 				//testEdges(gridDimension);
-				//setGeo();
+				setGeo();
 
 				/*
 				materials.push( new THREE.MeshLambertMaterial( { color: 0x003300 } ) );
@@ -354,7 +379,9 @@
 			document.addEventListener('keydown', function(event) {
 				if (event.code == 'Space') {
 					//reverseCells();
-					evolveCells();
+					//evolveCells();
+					
+					cellsMatrix = randomColor(cellsMatrix,0.8);
 					setGeo();
 
 					/* for (let i = 0; i < 16; i++) {
