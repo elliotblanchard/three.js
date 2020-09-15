@@ -35,17 +35,50 @@
 
 			let objects = [], materials = [];
 
-			let cell = {
-				h: 0.0,
-				s: 0.0,
-				l: 0.0,
-				age: 0
-			}
+			//Initialize cellsMatrix (should this all be in an object?)
+			let cellsMatrix = Array(gridDimension ** 2);
 
-			let cellsMatrix = Array(gridDimension ** 2)
+			class Cell {
+				constructor(hue, sat, lum, age) {
+    				this._hue = hue;
+					this._sat = sat;
+					this._lum = lum;
+					this._age = age;
+  				}	
+
+				get hue() {
+    				return this._hue;
+  				}
+				get sat() {
+    				return this._sat;
+  				}	
+				get lum() {
+    				return this._lum;
+  				}
+				get age() {
+    				return this._age;
+  				}	 	
+				set hue(newHue) {
+    				this._hue = newHue;
+ 				}	
+				set sat(newSat) {
+    				this._sat = newSat;
+ 				}	
+				set lum(newLum) {
+    				this._lum = newLum;
+ 				}	
+				set age(newAge) {
+    				this._age = newAge;
+ 				}			 			 			  		  			  
+
+				//h: 0.0,
+				//s: 0.0,
+				//l: 0.0,
+				//age: 0
+			}			
 			
 			for (var i = 0; i < cellsMatrix.length; i++) {
-				cellsMatrix[i] = {h: 0.0, s: 0.0, l: 0.0, age: 0}
+				cellsMatrix[i] = new Cell(0.0, 0.0, 0.0, 0);
 			}
 			
 			//let cellsMatrix = [
@@ -92,11 +125,12 @@
 			function randomColor(cellsMatrix,probability) {
 				//Sets a percentage of the cells to a random color.
 				//Probability is the chance of the change being applied to a cell (0-1)
+				//This should be a map()
 				for (let i = 0; i < (gridDimension ** 2); i++) {
 					if (Math.random() > probability) {
-						cellsMatrix[i].h = Math.random();
-						cellsMatrix[i].s = Math.random();
-						cellsMatrix[i].l = Math.random();
+						cellsMatrix[i].hue = Math.random();
+						cellsMatrix[i].sat = Math.random();
+						cellsMatrix[i].lum = Math.random();
 						cellsMatrix[i].age = 0;
 					}
 				}
@@ -104,11 +138,12 @@
 			}
 
 			function setGeo() {
+				//This should be a map() (?)
 				for (let i = 0; i < (gridDimension ** 2); i++) {
 					//console.log(`cellsMatrix length is: ${cellsMatrix.length}`);
 					//console.log(`Cell ${i} is: ${cellsMatrix[i].h}, ${cellsMatrix[i].s}, ${cellsMatrix[i].l}`);
 					//console.log(`Materials length is: ${materials.length}`);
-					materials[i].emissive.setHSL(cellsMatrix[i].h, cellsMatrix[i].s, cellsMatrix[i].l)
+					materials[i].emissive.setHSL(cellsMatrix[i].hue, cellsMatrix[i].sat, cellsMatrix[i].lum)
 				}
 			}		
 
@@ -381,7 +416,7 @@
 					//reverseCells();
 					//evolveCells();
 					
-					cellsMatrix = randomColor(cellsMatrix,0.8);
+					cellsMatrix = randomColor(cellsMatrix,0.95);
 					setGeo();
 
 					/* for (let i = 0; i < 16; i++) {
