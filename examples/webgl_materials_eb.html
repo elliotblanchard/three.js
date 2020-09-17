@@ -16,10 +16,28 @@
 			import * as THREE from '../build/three.module.js';
 
 			import Stats from './jsm/libs/stats.module.js';
+			import { GUI } from './jsm/libs/dat.gui.module.js';			
+			import { EffectComposer } from './jsm/postprocessing/EffectComposer.js';
+			import { RenderPass } from './jsm/postprocessing/RenderPass.js';
+			import { UnrealBloomPass } from './jsm/postprocessing/UnrealBloomPass.js';	
+
+			let container, stats;
+
+			let params = {
+				exposure: 1,
+				bloomStrength: 3,
+				bloomThreshold: 0.25,
+				bloomRadius: 0.1
+			};			
+
+			let camera, scene, renderer, composer;
+			let pointLight;
+
+			let objects = [], materials = [];					
 
 			const gridDimension = 50;
 			const tileDimension = 10;
-			const tileDepth = 20;
+			const tileDepth = 2;
 			const cellLife = 20; //in frames
 			//const lifeRandom = 0.25; // random variance in life among cells
 
@@ -30,13 +48,6 @@
 				leftRow: []
 			};
 
-			let container, stats;
-
-			let camera, scene, renderer;
-			let pointLight;
-
-			let objects = [], materials = [];
-
 			//Initialize cellsMatrix (should this all be in an object?)
 			let cellsMatrix = Array(gridDimension ** 2);
 
@@ -44,8 +55,7 @@
 				constructor(hue, sat, lum, age) {
     				this._hue = hue;
 					this._sat = sat;
-					this._lumInitial = lum;
-					this._lumCurrent = lum;
+					this._lum = lum;
 					this._age = age;
   				}	
 
@@ -55,11 +65,8 @@
 				get sat() {
     				return this._sat;
   				}	
-				get lumInitial() {
-    				return this._lumInitial;
-  				}
-				get lumCurrent() {
-    				return this._lumCurrent;
+				get lum() {
+    				return this._lum;
   				}				  
 				get age() {
     				return this._age;
@@ -70,12 +77,9 @@
 				set sat(newSat) {
     				this._sat = newSat;
  				}	
-				set lumInitial(newLumInitial) {
-    				this._lumInitial = newLumInitial;
- 				}
-				set lumCurrent(newLumCurrent) {
-    				this._lumCurrent = newLumCurrent;
- 				}				 	
+				set lum(newLum) {
+    				this._lum = newLum;
+ 				}			 	
 				set age(newAge) {
     				this._age = newAge;
  				}			 			 			  		  			  
@@ -134,9 +138,7 @@
 					if (Math.random() > probability) {
 						cellsMatrix[i].hue = Math.random();
 						cellsMatrix[i].sat = Math.random();
-						let lum = Math.random();
-						cellsMatrix[i].lumInitial = lum;
-						cellsMatrix[i].lumCurrent = lum;
+						cellsMatrix[i].lum = Math.random();
 						cellsMatrix[i].age = 0;
 					}
 				}
@@ -146,10 +148,7 @@
 			function setGeo() {
 				//This should be a map() (?)
 				for (let i = 0; i < (gridDimension ** 2); i++) {
-					//console.log(`cellsMatrix length is: ${cellsMatrix.length}`);
-					//console.log(`Cell ${i} is: ${cellsMatrix[i].h}, ${cellsMatrix[i].s}, ${cellsMatrix[i].l}`);
-					//console.log(`Materials length is: ${materials.length}`);
-					materials[i].emissive.setHSL(cellsMatrix[i].hue, cellsMatrix[i].sat, cellsMatrix[i].lumCurrent)
+					materials[i].emissive.setHSL(cellsMatrix[i].hue, cellsMatrix[i].sat, cellsMatrix[i].lum)
 				}
 			}
 
@@ -157,8 +156,8 @@
 				//Updates cell ages for all active cells and dims their luminosity
 				for (var i = 0; i < cellsMatrix.length; i++) {
 					cellsMatrix[i].age++;
-					if (cellsMatrix[i].lumCurrent > 0) {
-						cellsMatrix[i].lumCurrent -= (1.0 / cellLife)
+					if (cellsMatrix[i].lum > 0) {
+						cellsMatrix[i].lum -= (1.0 / cellLife)
 					}
 				}
 			}		
@@ -261,14 +260,9 @@
 
 				scene = new THREE.Scene();
 
-				// Grid
-				//let helper = new THREE.GridHelper( 1000, 40, 0x303030, 0x303030 );
-				//helper.position.y = - 75;
-				//scene.add( helper );
-
 				// Materials
 				for (let i = 0; i < (gridDimension ** 2); i++) {
-					materials.push( new THREE.MeshLambertMaterial( { color: 0x333333 } ) )
+					materials.push( new THREE.MeshLambertMaterial( { color: 0x202020 } ) )
 				}
 
 				setEdges(gridDimension);
@@ -298,7 +292,9 @@
 				// Geometry
 
 				//let geometry = new THREE.SphereBufferGeometry( 70, 32, 16 );
-                let geometry = new THREE.BoxGeometry(tileDimension,tileDepth,tileDimension);
+				//let geometry = new THREE.SphereBufferGeometry(tileDepth,tileDepth,tileDepth);
+				let geometry = new THREE.CylinderGeometry( tileDepth, tileDepth, tileDepth, 16 );
+                //let geometry = new THREE.BoxGeometry(tileDimension,tileDepth,tileDimension);
 
 				for ( let i = 0, l = materials.length; i < l; i ++ ) {
 
@@ -322,13 +318,48 @@
 				pointLight = new THREE.PointLight( 0xffffff, 1 );
 				scene.add( pointLight );
 
-				pointLight.add( new THREE.Mesh( new THREE.SphereBufferGeometry( 4, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0xffffff } ) ) );
+				//pointLight.add( new THREE.Mesh( new THREE.SphereBufferGeometry( 4, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0xffffff } ) ) );
 
 				//
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				container.appendChild( renderer.domElement );
+
+				let renderScene = new RenderPass( scene, camera );
+
+				let bloomPass = new UnrealBloomPass( new THREE.Vector2( window.innerWidth, window.innerHeight ), 1.5, 0.4, 0.85 );
+				bloomPass.threshold = params.bloomThreshold;
+				bloomPass.strength = params.bloomStrength;
+				bloomPass.radius = params.bloomRadius;
+
+				composer = new EffectComposer( renderer );
+				composer.addPass( renderScene );
+				composer.addPass( bloomPass );				
+				var gui = new GUI();
+
+				gui.add( params, 'bloomThreshold', 0.0, 1.0 ).onChange( function ( value ) {
+
+					bloomPass.threshold = Number( value );
+
+				} );
+
+				gui.add( params, 'bloomStrength', 0.0, 3.0 ).onChange( function ( value ) {
+
+					bloomPass.strength = Number( value );
+
+				} );
+
+				gui.add( params, 'bloomRadius', 0.0, 1.0 ).step( 0.01 ).onChange( function ( value ) {
+
+					bloomPass.radius = Number( value );
+
+				} );
+
+				// Grid
+				//let helper = new THREE.GridHelper( 1000, 40, 0x303030, 0x303030 );
+				//helper.position.y = - 75;
+				//scene.add( helper );				
 
 				//
 				stats = new Stats();
@@ -375,6 +406,7 @@
 
 				render();
 				stats.update();
+				composer.render();				
 
 			}
 
@@ -423,7 +455,7 @@
 				pointLight.position.y = 100;
 				pointLight.position.z = Math.cos( timer * 3 ) * 300;
 
-				cellsMatrix = randomColor(cellsMatrix,0.95);
+				cellsMatrix = randomColor(cellsMatrix,0.99);
 				ageCells();
 				setGeo();
 
