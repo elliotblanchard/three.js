@@ -20,6 +20,8 @@
 			const gridDimension = 50;
 			const tileDimension = 10;
 			const tileDepth = 20;
+			const cellLife = 20; //in frames
+			//const lifeRandom = 0.25; // random variance in life among cells
 
 			let edges = {
 				topRow: [],
@@ -42,7 +44,8 @@
 				constructor(hue, sat, lum, age) {
     				this._hue = hue;
 					this._sat = sat;
-					this._lum = lum;
+					this._lumInitial = lum;
+					this._lumCurrent = lum;
 					this._age = age;
   				}	
 
@@ -52,9 +55,12 @@
 				get sat() {
     				return this._sat;
   				}	
-				get lum() {
-    				return this._lum;
+				get lumInitial() {
+    				return this._lumInitial;
   				}
+				get lumCurrent() {
+    				return this._lumCurrent;
+  				}				  
 				get age() {
     				return this._age;
   				}	 	
@@ -64,17 +70,15 @@
 				set sat(newSat) {
     				this._sat = newSat;
  				}	
-				set lum(newLum) {
-    				this._lum = newLum;
- 				}	
+				set lumInitial(newLumInitial) {
+    				this._lumInitial = newLumInitial;
+ 				}
+				set lumCurrent(newLumCurrent) {
+    				this._lumCurrent = newLumCurrent;
+ 				}				 	
 				set age(newAge) {
     				this._age = newAge;
  				}			 			 			  		  			  
-
-				//h: 0.0,
-				//s: 0.0,
-				//l: 0.0,
-				//age: 0
 			}			
 			
 			for (var i = 0; i < cellsMatrix.length; i++) {
@@ -130,7 +134,9 @@
 					if (Math.random() > probability) {
 						cellsMatrix[i].hue = Math.random();
 						cellsMatrix[i].sat = Math.random();
-						cellsMatrix[i].lum = Math.random();
+						let lum = Math.random();
+						cellsMatrix[i].lumInitial = lum;
+						cellsMatrix[i].lumCurrent = lum;
 						cellsMatrix[i].age = 0;
 					}
 				}
@@ -143,7 +149,17 @@
 					//console.log(`cellsMatrix length is: ${cellsMatrix.length}`);
 					//console.log(`Cell ${i} is: ${cellsMatrix[i].h}, ${cellsMatrix[i].s}, ${cellsMatrix[i].l}`);
 					//console.log(`Materials length is: ${materials.length}`);
-					materials[i].emissive.setHSL(cellsMatrix[i].hue, cellsMatrix[i].sat, cellsMatrix[i].lum)
+					materials[i].emissive.setHSL(cellsMatrix[i].hue, cellsMatrix[i].sat, cellsMatrix[i].lumCurrent)
+				}
+			}
+
+			function ageCells () {
+				//Updates cell ages for all active cells and dims their luminosity
+				for (var i = 0; i < cellsMatrix.length; i++) {
+					cellsMatrix[i].age++;
+					if (cellsMatrix[i].lumCurrent > 0) {
+						cellsMatrix[i].lumCurrent -= (1.0 / cellLife)
+					}
 				}
 			}		
 
@@ -407,6 +423,10 @@
 				pointLight.position.y = 100;
 				pointLight.position.z = Math.cos( timer * 3 ) * 300;
 
+				cellsMatrix = randomColor(cellsMatrix,0.95);
+				ageCells();
+				setGeo();
+
 				renderer.render( scene, camera );
 
 			}
@@ -416,7 +436,7 @@
 					//reverseCells();
 					//evolveCells();
 					
-					cellsMatrix = randomColor(cellsMatrix,0.95);
+					cellsMatrix = randomColor(cellsMatrix,0.99);
 					setGeo();
 
 					/* for (let i = 0; i < 16; i++) {
