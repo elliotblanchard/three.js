@@ -38,7 +38,7 @@
 			const gridDimension = 50;
 			const tileDimension = 10;
 			const tileDepth = 2;
-			const cellLife = 20; //in frames
+			const cellLife = 50; //in frames
 			//const lifeRandom = 0.25; // random variance in life among cells
 
 			let edges = {
@@ -137,7 +137,7 @@
 				for (let i = 0; i < (gridDimension ** 2); i++) {
 					if (Math.random() > probability) {
 						cellsMatrix[i].hue = Math.random();
-						cellsMatrix[i].sat = Math.random();
+		  				cellsMatrix[i].sat = Math.random();
 						cellsMatrix[i].lum = Math.random();
 						cellsMatrix[i].age = 0;
 					}
@@ -455,7 +455,7 @@
 				pointLight.position.y = 100;
 				pointLight.position.z = Math.cos( timer * 3 ) * 300;
 
-				cellsMatrix = randomColor(cellsMatrix,0.99);
+				//cellsMatrix = randomColor(cellsMatrix,0.95);
 				ageCells();
 				setGeo();
 
@@ -468,7 +468,7 @@
 					//reverseCells();
 					//evolveCells();
 					
-					cellsMatrix = randomColor(cellsMatrix,0.99);
+					cellsMatrix = randomColor(cellsMatrix,0.75);
 					setGeo();
 
 					/* for (let i = 0; i < 16; i++) {
@@ -482,7 +482,17 @@
 						}
 					} */
 				}
-			});			
+			});	
+
+			//BPM timed actions
+			
+			let myVar = setInterval(bpmPulse, 500);	
+
+			function bpmPulse() {
+				cellsMatrix = randomColor(cellsMatrix,0.75);
+				setGeo();
+			}	
+			
 
 		</script>
 
