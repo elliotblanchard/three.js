@@ -13,44 +13,28 @@
 
 		<script type="module">
 
+			//Three.js lib import
 			import * as THREE from '../build/three.module.js';
-
 			import Stats from './jsm/libs/stats.module.js';
 			import { GUI } from './jsm/libs/dat.gui.module.js';			
 			import { EffectComposer } from './jsm/postprocessing/EffectComposer.js';
 			import { RenderPass } from './jsm/postprocessing/RenderPass.js';
 			import { UnrealBloomPass } from './jsm/postprocessing/UnrealBloomPass.js';	
 
+			//Three.js cars
 			let container, stats;
+			let camera, scene, renderer, composer;
+			let pointLight;
+			let objects = [], materials = [];
 
 			let params = {
 				exposure: 1,
 				bloomStrength: 3,
 				bloomThreshold: 0.25,
 				bloomRadius: 0.1
-			};			
+			};					
 
-			let camera, scene, renderer, composer;
-			let pointLight;
-
-			let objects = [], materials = [];					
-
-			const gridDimension = 50;
-			const tileDimension = 10;
-			const tileDepth = 2;
-			const cellLife = 50; //in frames
-			//const lifeRandom = 0.25; // random variance in life among cells
-
-			let edges = {
-				topRow: [],
-				rightRow: [],
-				bottomRow: [],
-				leftRow: []
-			};
-
-			//Initialize cellsMatrix (should this all be in an object?)
-			let cellsMatrix = Array(gridDimension ** 2);
-
+			//Define overall class for the cells matrix
 			class Cell {
 				constructor(hue, sat, lum, age) {
     				this._hue = hue;
@@ -83,19 +67,117 @@
 				set age(newAge) {
     				this._age = newAge;
  				}			 			 			  		  			  
-			}			
+			}
+
+			class CellEcosystem {
+				constructor(gridDimension,cellDimension,cellDepth,cellLife) {
+					this._gridDimension = gridDimension;
+					this._cellDimension = cellDimension;
+					this._cellDepth = cellDepth;
+					this._cellLife = cellLife;	
+					this._edges = { topRow: [], rightRow: [], bottomRow: [], leftRow: [] };	
+					this._cellsMatrix = Array(this.gridDimension ** 2);		
+
+					//Init the matrix (how do you return an object in a map)
+					for (let i = 0; i < this._cellsMatrix.length; i++) {
+						this._cellsMatrix[i] = new Cell(0.0, 0.0, 0.0, 0);
+					}	
+					this._edges = this.setEdges(this._edges);																
+				}
+
+				setEdges(edges) {	
+					//how to do as a map since you need to keep track of iteration?		
+					for (let i = 0; i < (this._gridDimension ** 2); i++) {
+						let j = i+1;
+						if (i < this._gridDimension) {
+							edges.topRow.push(i)
+						}
+						if (i > ((this._gridDimension ** 2)-this._gridDimension)) {
+							edges.bottomRow.push(i)
+						}
+						if (j % this._gridDimension === 0) {
+							edges.rightRow.push(i)
+						}
+						if (i % this._gridDimension === 0) {
+							edges.leftRow.push(i)
+						}					
+					}
+					return edges
+				}
+
+				testEdges() {				
+					const allEdges = [...this._edges.topRow, ...this._edges.rightRow, ...this._edges.bottomRow, ...this._edges.leftRow];
+					for (let i = 0; i < (gridDimension ** 2); i++) {
+						if (allEdges.includes(i)) {	
+							materials[i].emissive.setHSL(0.0, 0.0, 1.0)
+						}
+						else {
+							materials[i].emissive.setHSL(0.0, 0.0, 0.0)
+						}
+					}
+				}	
+
+				randomColor(probability) {
+					//Sets a percentage of the cells to a random color.
+					//Probability is the chance of the change being applied to a cell (0-1)
+					//This should be a map() - but how do you do a map when each item is an object you're modifying object variables?
+					for (let i = 0; i < this._cellsMatrix.length; i++) {
+						if (Math.random() > probability) {
+							this._cellsMatrix[i].hue = Math.random();
+							this._cellsMatrix[i].sat = Math.random();
+							this._cellsMatrix[i].lum = Math.random();
+							this._cellsMatrix[i].age = 0;
+						}
+					}
+				}							
+
+				get gridDimension() {
+    				return this._gridDimension;
+  				}		
+				set gridDimension(newGridDimension) {
+    				this._gridDimension = newGridDimension;
+ 				}
+				get cellDimension() {
+    				return this._cellDimension;
+  				}		
+				set cellDimension(newCellDimension) {
+    				this._cellDimension = newCellDimension;
+ 				}		
+				get cellDepth() {
+    				return this._cellDepth;
+  				}		
+				set cellDepth(newCellDepth) {
+    				this._cellDepth = newCellDepth;
+ 				}				 	
+				get cellLife() {
+    				return this._cellLife;
+  				}		
+				set cellLife(newCellLife) {
+    				this._cellLife = newCellLife;
+ 				}					 	 				  		
+			}
+
+
+			const gridDimension = 50;
+			const tileDimension = 10;
+			const tileDepth = 2;
+			const cellLife = 50; //in frames
+			//const lifeRandom = 0.25; // random variance in life among cells
+
+			let edges = {
+				topRow: [],
+				rightRow: [],
+				bottomRow: [],
+				leftRow: []
+			};
+
+			//Initialize cellsMatrix (should this all be in an object?)
+			let cellsMatrix = Array(gridDimension ** 2);			
 			
 			for (var i = 0; i < cellsMatrix.length; i++) {
 				cellsMatrix[i] = new Cell(0.0, 0.0, 0.0, 0);
 			}
 			
-			//let cellsMatrix = [
-			//	1, 0, 0, 0,
-			//	0, 1, 0, 0,
-			//	0, 0, 1, 0,
-			//	0, 0, 0, 1
-			//];
-
 			init();
 			animate();
 
@@ -144,7 +226,15 @@
 				}
 				return cellsMatrix
 			}
-
+			///
+			///
+			///
+			///
+			///
+			///
+			///
+			///
+			///
 			function setGeo() {
 				//This should be a map() (?)
 				for (let i = 0; i < (gridDimension ** 2); i++) {
@@ -265,45 +355,24 @@
 					materials.push( new THREE.MeshLambertMaterial( { color: 0x202020 } ) )
 				}
 
+				//let cellTest = new CellEcosystem(50,10,2,50);
+				//cellTest.testEdges();
+				//cellTest.randomColor(0.0);
+				//debugger;
+
 				setEdges(gridDimension);
-				//testEdges(gridDimension);
 				setGeo();
-
-				/*
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x003300 } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x006600 } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x009900 } ) );
-                materials.push( new THREE.MeshLambertMaterial( { color: 0x00aa00 } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x000033 } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x000066 } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x000099 } ) );
-                materials.push( new THREE.MeshLambertMaterial( { color: 0x0000aa } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x330000 } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x660000 } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x990000 } ) );
-                materials.push( new THREE.MeshLambertMaterial( { color: 0xaa0000 } ) );      
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x330033 } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x660066 } ) );
-				materials.push( new THREE.MeshLambertMaterial( { color: 0x990099 } ) );
-                materials.push( new THREE.MeshLambertMaterial( { color: 0xaa00aa } ) );  
-				*/                                         
-
+                                    
 
 				// Geometry
-
-				//let geometry = new THREE.SphereBufferGeometry( 70, 32, 16 );
-				//let geometry = new THREE.SphereBufferGeometry(tileDepth,tileDepth,tileDepth);
 				let geometry = new THREE.CylinderGeometry( tileDepth, tileDepth, tileDepth, 16 );
                 //let geometry = new THREE.BoxGeometry(tileDimension,tileDepth,tileDimension);
 
 				for ( let i = 0, l = materials.length; i < l; i ++ ) {
-
 					addMesh( geometry, materials[ i ] );
-
 				}
 
 				// Lights
-
 				scene.add( new THREE.AmbientLight( 0x111111 ) );
 
 				let directionalLight = new THREE.DirectionalLight( 0xffffff, 0.125 );
@@ -318,9 +387,6 @@
 				pointLight = new THREE.PointLight( 0xffffff, 1 );
 				scene.add( pointLight );
 
-				//pointLight.add( new THREE.Mesh( new THREE.SphereBufferGeometry( 4, 8, 8 ), new THREE.MeshBasicMaterial( { color: 0xffffff } ) ) );
-
-				//
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
@@ -354,12 +420,7 @@
 
 					bloomPass.radius = Number( value );
 
-				} );
-
-				// Grid
-				//let helper = new THREE.GridHelper( 1000, 40, 0x303030, 0x303030 );
-				//helper.position.y = - 75;
-				//scene.add( helper );				
+				} );		
 
 				//
 				stats = new Stats();
@@ -376,12 +437,10 @@
 
 				mesh.position.x = ( objects.length % gridDimension ) * (tileDimension*1.1) - 280;
 				mesh.position.z = Math.floor( objects.length / gridDimension ) * (tileDimension*1.1) - 280;
-
 				
 				//mesh.rotation.x = 45;
 				//mesh.rotation.y = 0;
 				//mesh.rotation.z = 45;
-				
 
 				objects.push( mesh );
 
@@ -414,48 +473,11 @@
 
 				let timer = 0.0001 * Date.now();
 
-				
-				//camera.position.x = Math.cos( timer ) * 1000;
-				//camera.position.z = Math.sin( timer ) * 1000;
-
-			 	//camera.lookAt( scene.position );
-
-				/*
-				for ( let i = 0, l = objects.length; i < l; i ++ ) {
-
-					let object = objects[ i ];
-
-					object.rotation.x += 0.02;
-					object.rotation.y += 0.01;
-
-				}
-
-				
-				materials[ materials.length - 1 ].emissive.setHSL( 0.05, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
-				materials[ materials.length - 2 ].emissive.setHSL( 0.10, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
-				materials[ materials.length - 3 ].emissive.setHSL( 0.15, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
-				materials[ materials.length - 4 ].emissive.setHSL( 0.20, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
-				materials[ materials.length - 5 ].emissive.setHSL( 0.25, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
-				materials[ materials.length - 6 ].emissive.setHSL( 0.30, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
-				materials[ materials.length - 7 ].emissive.setHSL( 0.35, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
-				materials[ materials.length - 8 ].emissive.setHSL( 0.40, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
-				materials[ materials.length - 9 ].emissive.setHSL( 0.45, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
-				materials[ materials.length - 10 ].emissive.setHSL( 0.50, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
-				materials[ materials.length - 11 ].emissive.setHSL( 0.55, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
-				materials[ materials.length - 12 ].emissive.setHSL( 0.60, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
-				materials[ materials.length - 13 ].emissive.setHSL( 0.65, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
-				materials[ materials.length - 14 ].emissive.setHSL( 0.70, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
-				materials[ materials.length - 15 ].emissive.setHSL( 0.75, 1, 0.35 * ( 0.5 + 0.5 * Math.cos( 35 * timer ) ) );
-				materials[ materials.length - 16 ].emissive.setHSL( 0.80, 1, 0.35 * ( 0.5 + 0.5 * Math.sin( 35 * timer ) ) );
-				*/
-
 
 				pointLight.position.x = Math.sin( timer * 7 ) * 300;
-				//pointLight.position.y = Math.cos( timer * 5 ) * 400;
 				pointLight.position.y = 100;
 				pointLight.position.z = Math.cos( timer * 3 ) * 300;
 
-				//cellsMatrix = randomColor(cellsMatrix,0.95);
 				ageCells();
 				setGeo();
 
@@ -465,22 +487,10 @@
 
 			document.addEventListener('keydown', function(event) {
 				if (event.code == 'Space') {
-					//reverseCells();
-					//evolveCells();
 					
 					cellsMatrix = randomColor(cellsMatrix,0.75);
 					setGeo();
 
-					/* for (let i = 0; i < 16; i++) {
-						if (Math.random() > 0.5) 
-						{
-							materials[i].emissive.setHSL(0.0, 0.0, 0.0)
-						}
-						else 
-						{
-							materials[i].emissive.setHSL(0.0, 0.0, 1.0)
-						}
-					} */
 				}
 			});	
 
