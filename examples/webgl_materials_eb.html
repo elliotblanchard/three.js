@@ -198,35 +198,35 @@
 					for (let i = 0; i < 16; i++) {
 						//Get number of neighbors for this cell
 						let neighbors = 0;
-						//North
+						//North (i-dimension)
 						if (this._cellsMatrix[i-4] == 1) {
 							neighbors++
 						}
-						//North West
+						//North West (i-(dimension-1))
 						if ( (this._cellsMatrix[i-3] == 1) && !rightRow.includes(i) ) {
 							neighbors++
 						}	
-						//West
+						//West (i+1)
 						if ((this._cellsMatrix[i+1] == 1) && !rightRow.includes(i) ) {
 							neighbors++
 						}		
-						//South West
+						//South West (i+(dimension+1))
 						if ((this._cellsMatrix[i+5] == 1) && !rightRow.includes(i) ) {
 							neighbors++
 						}			
-						//South
+						//South (i+dimension)
 						if (this._cellsMatrix[i+4] == 1) {
 							neighbors++
 						}
-						//South East
+						//South East (i+(dimension-1))
 						if ((this._cellsMatrix[i+3] == 1) && !leftRow.includes(i) ) {
 							neighbors++
 						}	
-						//East
+						//East (i-1)
 						if ((this._cellsMatrix[i-1] == 1) && !leftRow.includes(i) ) {
 							neighbors++
 						}	
-						//North East
+						//North East (i-(dimension+1))
 						if ((this._cellsMatrix[i-5] == 1) && !leftRow.includes(i) ) {
 							neighbors++
 						}	
