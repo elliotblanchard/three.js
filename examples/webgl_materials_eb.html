@@ -7,9 +7,6 @@
 		<link type="text/css" rel="stylesheet" href="main.css">
 	</head>
 	<body>
-		<div id="info">
-			<a href="https://threejs.org" target="_blank" rel="noopener">three.js</a> - webgl materials
-		</div>
 
 		<script type="module">
 
@@ -36,13 +33,21 @@
 
 			//Define overall class for the cells matrix
 			class Cell {
-				constructor(hue, sat, lum, age) {
+				constructor(material, geometry, hue, sat, lum, age) {
+					this._material = material;
+					this._geometry = geometry;
     				this._hue = hue;
 					this._sat = sat;
 					this._lum = lum;
 					this._age = age;
   				}	
 
+				get material() {
+    				return this._material;
+  				}
+				get geometry() {
+    				return this._geometry;
+  				}				  
 				get hue() {
     				return this._hue;
   				}
@@ -54,7 +59,13 @@
   				}				  
 				get age() {
     				return this._age;
-  				}	 	
+  				}	
+				set material(newMaterial) {
+    				this._material = newMaterial;
+ 				}	
+				set geometry(newGeometry) {
+    				this._geometry = newGeometry;
+ 				}				 	
 				set hue(newHue) {
     				this._hue = newHue;
  				}	
@@ -80,9 +91,35 @@
 
 					//Init the matrix (how do you return an object in a map)
 					for (let i = 0; i < this._cellsMatrix.length; i++) {
-						this._cellsMatrix[i] = new Cell(0.0, 0.0, 0.0, 0);
+						this._cellsMatrix[i] = new Cell(
+							new THREE.MeshLambertMaterial( {color: 0x202020} ), 
+							new THREE.CylinderGeometry( this._cellDepth, this._cellDepth, this._cellDepth, 16 ),
+							0.0, 
+							0.0, 
+							0.0, 
+							0
+							);
 					}	
-					this._edges = this.setEdges(this._edges);																
+					this._edges = this.setEdges(this._edges);	
+
+					/*
+					// Also should be in the class
+					for ( let i = 0, l = materials.length; i < l; i ++ ) {
+						addMesh(geometry, materials[i],cellEcosystem); //addMesh should be a class method
+					}
+
+					function addMesh(geometry, material, cellEcosystem) {
+						let mesh = new THREE.Mesh( geometry, material );
+
+						mesh.position.x = ( objects.length % cellEcosystem.gridDimension ) * (cellEcosystem.cellDimension*1.1) - 280;
+						mesh.position.z = Math.floor( objects.length / cellEcosystem.gridDimension ) * (cellEcosystem.cellDimension*1.1) - 280;
+
+						objects.push( mesh );
+
+						scene.add( mesh );
+
+					}					
+					*/																									
 				}
 
 				setEdges(edges) {	
@@ -246,7 +283,9 @@
  				}					 	 				  		
 			}
 
-			function init(cellEcosystem) {
+			function init() {
+
+				let cellEcosystem = new CellEcosystem(50,10,2,50);
 
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
@@ -256,7 +295,6 @@
 				camera.up = new THREE.Vector3(1,0,1);
 				camera.lookAt(new THREE.Vector3(0,0,0));
 				
-				//this needs to be defined before cellEcosystem - but how? seems like cellEcosystem should be created in init & returned??
 				scene = new THREE.Scene();
 
 				// Materials (this needs to be moved into the class - and the materials array)
@@ -330,6 +368,8 @@
 				//
 				window.addEventListener( 'resize', onWindowResize, false );
 
+				return cellEcosystem;
+
 			}
 
 			function addMesh(geometry, material, cellEcosystem) {
@@ -364,6 +404,8 @@
 				requestAnimationFrame( animate );
 
 				//why do these have to be called as a global to work?
+				//if class is passed in - gives this error:
+				//Uncaught TypeError: cellEcosystem.ageCells is not a function
 				cellEcosystem.ageCells();
 				cellEcosystem.setGeo(materials);
 				render();
@@ -403,8 +445,9 @@
 				cellEcosystem.setGeo(materials);
 			}	
 			
-			let cellEcosystem = new CellEcosystem(50,10,2,50);
-			init(cellEcosystem);
+			//let cellEcosystem = new CellEcosystem(50,10,2,50);
+			let cellEcosystem = init();
+			debugger;
 			animate();							
 		
 
