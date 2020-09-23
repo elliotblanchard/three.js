@@ -131,7 +131,7 @@
 					}
 				}
 
-				setGeo() {
+				setGeo(materials) {
 					//This should be a map() (?)
 					//This should basically go away once you store the actual material objects in the cell classes
 					//So don't worry about referencing global vars for now
@@ -267,8 +267,8 @@
 				cellsMatrix[i] = new Cell(0.0, 0.0, 0.0, 0);
 			}
 			
-			init();
-			animate();
+			//init();
+			//animate(cellEcosystem);
 
 			function setEdges(gridDimension) {			
 				//This should be a method of the edges object that runs on object init
@@ -430,19 +430,19 @@
 				//
 				//
 				//
-				let cellTest = new CellEcosystem(50,10,2,50);
-				cellTest.testEdges();
-				cellTest.randomColor(0.0);
-				cellTest.setGeo();
-				//debugger;
-				cellTest.ageCells();
-				//debugger;
-				//
-				//
-				//
 
-				setEdges(gridDimension);
-				setGeo();
+				//cellEcosystem.setGeo();
+				//cellTest.testEdges();
+				//cellTest.randomColor(0.0);
+				//cellTest.setGeo();
+				//debugger;
+				//cellTest.ageCells();
+				//debugger;
+				//
+				//
+				//
+				//setEdges(gridDimension);
+				//setGeo();
                                     
 
 				// Geometry
@@ -450,7 +450,7 @@
                 //let geometry = new THREE.BoxGeometry(tileDimension,tileDepth,tileDimension);
 
 				for ( let i = 0, l = materials.length; i < l; i ++ ) {
-					addMesh( geometry, materials[ i ] );
+					addMesh(geometry, materials[i],cellEcosystem);
 				}
 
 				// Lights
@@ -512,12 +512,11 @@
 
 			}
 
-			function addMesh( geometry, material ) {
-
+			function addMesh(geometry, material, cellEcosystem) {
 				let mesh = new THREE.Mesh( geometry, material );
 
-				mesh.position.x = ( objects.length % gridDimension ) * (tileDimension*1.1) - 280;
-				mesh.position.z = Math.floor( objects.length / gridDimension ) * (tileDimension*1.1) - 280;
+				mesh.position.x = ( objects.length % cellEcosystem.gridDimension ) * (cellEcosystem.cellDimension*1.1) - 280;
+				mesh.position.z = Math.floor( objects.length / cellEcosystem.gridDimension ) * (cellEcosystem.cellDimension*1.1) - 280;
 				
 				//mesh.rotation.x = 45;
 				//mesh.rotation.y = 0;
@@ -544,6 +543,9 @@
 
 				requestAnimationFrame( animate );
 
+				//debugger;
+				cellEcosystem.ageCells();
+				cellEcosystem.setGeo(materials);
 				render();
 				stats.update();
 				composer.render();				
@@ -559,9 +561,6 @@
 				pointLight.position.y = 100;
 				pointLight.position.z = Math.cos( timer * 3 ) * 300;
 
-				ageCells();
-				setGeo();
-
 				renderer.render( scene, camera );
 
 			}
@@ -569,8 +568,8 @@
 			document.addEventListener('keydown', function(event) {
 				if (event.code == 'Space') {
 					
-					cellsMatrix = randomColor(cellsMatrix,0.75);
-					setGeo();
+					cellEcosystem.randomColor(0.75);
+					cellEcosystem.setGeo(materials);
 
 				}
 			});	
@@ -580,10 +579,14 @@
 			let myVar = setInterval(bpmPulse, 500);	
 
 			function bpmPulse() {
-				cellsMatrix = randomColor(cellsMatrix,0.75);
-				setGeo();
+				cellEcosystem.randomColor(0.75);
+				cellEcosystem.setGeo(materials);
 			}	
 			
+			let cellEcosystem = new CellEcosystem(50,10,2,50);
+			init();
+			animate();							
+		
 
 		</script>
 
