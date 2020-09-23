@@ -107,7 +107,7 @@
 
 				testEdges() {				
 					const allEdges = [...this._edges.topRow, ...this._edges.rightRow, ...this._edges.bottomRow, ...this._edges.leftRow];
-					for (let i = 0; i < (gridDimension ** 2); i++) {
+					for (let i = 0; i < (this._gridDimension ** 2); i++) {
 						if (allEdges.includes(i)) {	
 							materials[i].emissive.setHSL(0.0, 0.0, 1.0)
 						}
@@ -246,170 +246,7 @@
  				}					 	 				  		
 			}
 
-
-			const gridDimension = 50;
-			const tileDimension = 10;
-			const tileDepth = 2;
-			const cellLife = 50; //in frames
-			//const lifeRandom = 0.25; // random variance in life among cells
-
-			let edges = {
-				topRow: [],
-				rightRow: [],
-				bottomRow: [],
-				leftRow: []
-			};
-
-			//Initialize cellsMatrix (should this all be in an object?)
-			let cellsMatrix = Array(gridDimension ** 2);			
-			
-			for (var i = 0; i < cellsMatrix.length; i++) {
-				cellsMatrix[i] = new Cell(0.0, 0.0, 0.0, 0);
-			}
-			
-			//init();
-			//animate(cellEcosystem);
-
-			function setEdges(gridDimension) {			
-				//This should be a method of the edges object that runs on object init
-				for (var i = 0; i < (gridDimension ** 2); i++) {
-					let j = i+1;
-					if (i < gridDimension) {
-						edges.topRow.push(i)
-					}
-					if (i > ((gridDimension ** 2)-gridDimension)) {
-						edges.bottomRow.push(i)
-					}
-					if (j % gridDimension === 0) {
-						edges.rightRow.push(i)
-					}
-					if (i % gridDimension === 0) {
-						edges.leftRow.push(i)
-					}					
-				}
-			}
-
-			function testEdges(gridDimension) {
-				const allEdges = [...edges.topRow, ...edges.rightRow, ...edges.bottomRow, ...edges.leftRow];
-				for (let i = 0; i < (gridDimension ** 2); i++) {
-					if (allEdges.includes(i)) {
-						materials[i].emissive.setHSL(0.0, 0.0, 1.0)
-					}
-					else {
-						materials[i].emissive.setHSL(0.0, 0.0, 0.0)
-					}
-				}
-			}	
-
-			function randomColor(cellsMatrix,probability) {
-				//Sets a percentage of the cells to a random color.
-				//Probability is the chance of the change being applied to a cell (0-1)
-				//This should be a map()
-				for (let i = 0; i < (gridDimension ** 2); i++) {
-					if (Math.random() > probability) {
-						cellsMatrix[i].hue = Math.random();
-		  				cellsMatrix[i].sat = Math.random();
-						cellsMatrix[i].lum = Math.random();
-						cellsMatrix[i].age = 0;
-					}
-				}
-				return cellsMatrix
-			}
-
-			function setGeo() {
-				//This should be a map() (?)
-				//This should basically go away once you store the actual material objects in the cell classes
-				//So don't worry about referencing global vars for now
-				for (let i = 0; i < (gridDimension ** 2); i++) {
-					materials[i].emissive.setHSL(cellsMatrix[i].hue, cellsMatrix[i].sat, cellsMatrix[i].lum)
-				}
-			}
-
-			function ageCells () {
-				//Updates cell ages for all active cells and dims their luminosity
-				for (var i = 0; i < cellsMatrix.length; i++) {
-					cellsMatrix[i].age++;
-					if (cellsMatrix[i].lum > 0) {
-						cellsMatrix[i].lum -= (1.0 / cellLife)
-					}
-				}
-			}		
-
-			function evolveCells() {
-				//If a cell is on,  and has three or more neighbors, it turns off
-				//If a cell is off, and has no neighbors,            it turns on 
-
-				/*
-					0  1  2  3
-					4  5  6  7
-					8  9  10 11
-					12 13 14 15
-
-					0  1  2  3  4
-					5  6  7  8  9
-					10 11 12 13 14
-					15 16 17 18 19
-					20 21 22 23 24
-				*/
-
-				//const topRow = [0,1,2,3];
-				//const rightRow = [3,7,11,15];
-				//const bottomRow = [12,13,14,15];
-				//const leftRow = [0,4,8,12];
-
-				let neighborsMatrix = [];
-
-				for (let i = 0; i < 16; i++) {
-					//Get number of neighbors for this cell
-					let neighbors = 0;
-					//North
-					if (cellsMatrix[i-4] == 1) {
-						neighbors++
-					}
-					//North West
-					if ( (cellsMatrix[i-3] == 1) && !rightRow.includes(i) ) {
-						neighbors++
-					}	
-					//West
-					if ((cellsMatrix[i+1] == 1) && !rightRow.includes(i) ) {
-						neighbors++
-					}		
-					//South West
-					if ((cellsMatrix[i+5] == 1) && !rightRow.includes(i) ) {
-						neighbors++
-					}			
-					//South
-					if (cellsMatrix[i+4] == 1) {
-						neighbors++
-					}
-					//South East
-					if ((cellsMatrix[i+3] == 1) && !leftRow.includes(i) ) {
-						neighbors++
-					}	
-					//East
-					if ((cellsMatrix[i-1] == 1) && !leftRow.includes(i) ) {
-						neighbors++
-					}	
-					//North East
-					if ((cellsMatrix[i-5] == 1) && !leftRow.includes(i) ) {
-						neighbors++
-					}	
-
-					neighborsMatrix[i] = neighbors																														
-				}
-
-				for (let i = 0; i < 16; i++) {
-					//Update matrix
-					if ((cellsMatrix[i] == 1) && (neighborsMatrix[i] > 2)) {
-						cellsMatrix[i] = 0
-					}	
-					if ((cellsMatrix[i] == 0) && (neighborsMatrix[i] == 0)) {
-						cellsMatrix[i] = 1
-					}
-				}
-			}			
-
-			function init() {
+			function init(cellEcosystem) {
 
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
@@ -422,31 +259,13 @@
 
 				scene = new THREE.Scene();
 
-				// Materials
-				for (let i = 0; i < (gridDimension ** 2); i++) {
+				// Materials (this needs to be moved into the class - and the materials array)
+				for (let i = 0; i < (cellEcosystem.gridDimension ** 2); i++) {
 					materials.push( new THREE.MeshLambertMaterial( { color: 0x202020 } ) )
 				}
 
-				//
-				//
-				//
-
-				//cellEcosystem.setGeo();
-				//cellTest.testEdges();
-				//cellTest.randomColor(0.0);
-				//cellTest.setGeo();
-				//debugger;
-				//cellTest.ageCells();
-				//debugger;
-				//
-				//
-				//
-				//setEdges(gridDimension);
-				//setGeo();
-                                    
-
 				// Geometry
-				let geometry = new THREE.CylinderGeometry( tileDepth, tileDepth, tileDepth, 16 );
+				let geometry = new THREE.CylinderGeometry( cellEcosystem.cellDepth, cellEcosystem.cellDepth, cellEcosystem.cellDepth, 16 );
                 //let geometry = new THREE.BoxGeometry(tileDimension,tileDepth,tileDimension);
 
 				for ( let i = 0, l = materials.length; i < l; i ++ ) {
@@ -543,7 +362,7 @@
 
 				requestAnimationFrame( animate );
 
-				//debugger;
+				//why do these have to be called as a global to work?
 				cellEcosystem.ageCells();
 				cellEcosystem.setGeo(materials);
 				render();
@@ -584,7 +403,7 @@
 			}	
 			
 			let cellEcosystem = new CellEcosystem(50,10,2,50);
-			init();
+			init(cellEcosystem);
 			animate();							
 		
 
