@@ -99,27 +99,12 @@
 							0.0, 
 							0
 							);
-					}	
-					this._edges = this.setEdges(this._edges);	
-
-					/*
-					// Also should be in the class
-					for ( let i = 0, l = materials.length; i < l; i ++ ) {
-						addMesh(geometry, materials[i],cellEcosystem); //addMesh should be a class method
-					}
-
-					function addMesh(geometry, material, cellEcosystem) {
-						let mesh = new THREE.Mesh( geometry, material );
-
-						mesh.position.x = ( objects.length % cellEcosystem.gridDimension ) * (cellEcosystem.cellDimension*1.1) - 280;
-						mesh.position.z = Math.floor( objects.length / cellEcosystem.gridDimension ) * (cellEcosystem.cellDimension*1.1) - 280;
-
-						objects.push( mesh );
-
+						let mesh = new THREE.Mesh( this._cellsMatrix[i].geometry, this._cellsMatrix[i].material );
+						mesh.position.x = ( (i+1) % this._gridDimension ) * (this._cellDimension*1.1) - 280;
+						mesh.position.z = Math.floor( (i+1) / this._gridDimension ) * (this._cellDimension*1.1) - 280;
 						scene.add( mesh );
-
-					}					
-					*/																									
+					}	
+					this._edges = this.setEdges(this._edges);																										
 				}
 
 				setEdges(edges) {	
@@ -173,7 +158,7 @@
 					//This should basically go away once you store the actual material objects in the cell classes
 					//So don't worry about referencing global vars for now
 					for (let i = 0; i < this._cellsMatrix.length; i++) {
-						materials[i].emissive.setHSL(this._cellsMatrix[i].hue, this._cellsMatrix[i].sat, this._cellsMatrix[i].lum)
+						this._cellsMatrix[i].material.emissive.setHSL(this._cellsMatrix[i].hue, this._cellsMatrix[i].sat, this._cellsMatrix[i].lum)
 					}
 				}
 
@@ -285,8 +270,6 @@
 
 			function init() {
 
-				let cellEcosystem = new CellEcosystem(50,10,2,50);
-
 				container = document.createElement( 'div' );
 				document.body.appendChild( container );
 
@@ -297,6 +280,9 @@
 				
 				scene = new THREE.Scene();
 
+				let cellEcosystem = new CellEcosystem(50,10,2,50);				
+
+				/*
 				// Materials (this needs to be moved into the class - and the materials array)
 				for (let i = 0; i < (cellEcosystem.gridDimension ** 2); i++) {
 					materials.push( new THREE.MeshLambertMaterial( { color: 0x202020 } ) )
@@ -310,6 +296,7 @@
 				for ( let i = 0, l = materials.length; i < l; i ++ ) {
 					addMesh(geometry, materials[i],cellEcosystem); //addMesh should be a class method
 				}
+				*/
 
 				// Lights
 				scene.add( new THREE.AmbientLight( 0x111111 ) );
