@@ -160,7 +160,12 @@
 
 				ageCells() {
 					//Updates cell ages for all active cells and dims their luminosity
+					//Also checks for neighbors to evolve system
 					//Should be map
+
+					//find # neighbors who have lum over a certian cutoff, update neighbors field in cell (need to add)
+
+					//update cells based on # of neighbors, age
 					for (var i = 0; i < this._cellsMatrix.length; i++) {
 						this._cellsMatrix[i].age++;
 						if (this._cellsMatrix[i].lum > 0) {
