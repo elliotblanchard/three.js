@@ -33,9 +33,8 @@
 
 			//Define overall class for the cells matrix
 			class Cell {
-				constructor(material, geometry, hue, sat, lum, age) {
+				constructor(material, hue, sat, lum, age) {
 					this._material = material;
-					this._geometry = geometry;
     				this._hue = hue;
 					this._sat = sat;
 					this._lum = lum;
@@ -44,9 +43,6 @@
 
 				get material() {
     				return this._material;
-  				}
-				get geometry() {
-    				return this._geometry;
   				}				  
 				get hue() {
     				return this._hue;
@@ -62,10 +58,7 @@
   				}	
 				set material(newMaterial) {
     				this._material = newMaterial;
- 				}	
-				set geometry(newGeometry) {
-    				this._geometry = newGeometry;
- 				}				 	
+ 				}					 	
 				set hue(newHue) {
     				this._hue = newHue;
  				}	
@@ -93,13 +86,12 @@
 					for (let i = 0; i < this._cellsMatrix.length; i++) {
 						this._cellsMatrix[i] = new Cell(
 							new THREE.MeshLambertMaterial( {color: 0x202020} ), 
-							new THREE.CylinderGeometry( this._cellDepth, this._cellDepth, this._cellDepth, 16 ),
 							0.0, 
 							0.0, 
 							0.0, 
 							0
 							);
-						let mesh = new THREE.Mesh( this._cellsMatrix[i].geometry, this._cellsMatrix[i].material );
+						let mesh = new THREE.Mesh( new THREE.CylinderGeometry( this._cellDepth, this._cellDepth, this._cellDepth, 16 ), this._cellsMatrix[i].material );
 						mesh.position.x = ( (i+1) % this._gridDimension ) * (this._cellDimension*1.1) - 280;
 						mesh.position.z = Math.floor( (i+1) / this._gridDimension ) * (this._cellDimension*1.1) - 280;
 						scene.add( mesh );
@@ -164,7 +156,7 @@
 					}
 				}
 				*/
-				
+
 				ageCells() {
 					//Updates cell ages for all active cells and dims their luminosity
 					//Should be map
@@ -175,7 +167,8 @@
 							this._cellsMatrix[i].material.emissive.setHSL(this._cellsMatrix[i].hue, this._cellsMatrix[i].sat, this._cellsMatrix[i].lum)
 						}
 					}
-				}																
+				}
+																	
 				
 				evolveCells() {
 					//If a cell is on,  and has three or more neighbors, it turns off
@@ -438,7 +431,7 @@
 			
 			//let cellEcosystem = new CellEcosystem(50,10,2,50);
 			let cellEcosystem = init();
-			debugger;
+			//debugger;
 			animate();							
 		
 
