@@ -129,7 +129,96 @@
 							this._cellsMatrix[i].age = 0;
 						}
 					}
-				}							
+				}
+
+				setGeo() {
+					//This should be a map() (?)
+					//This should basically go away once you store the actual material objects in the cell classes
+					//So don't worry about referencing global vars for now
+					for (let i = 0; i < this._cellsMatrix.length; i++) {
+						materials[i].emissive.setHSL(this._cellsMatrix[i].hue, this._cellsMatrix[i].sat, this._cellsMatrix[i].lum)
+					}
+				}
+
+				ageCells() {
+					//Updates cell ages for all active cells and dims their luminosity
+					//Should be map
+					for (var i = 0; i < this._cellsMatrix.length; i++) {
+						this._cellsMatrix[i].age++;
+						if (this._cellsMatrix[i].lum > 0) {
+							this._cellsMatrix[i].lum -= (1.0 / this._cellLife)
+						}
+					}
+				}																
+				
+				evolveCells() {
+					//If a cell is on,  and has three or more neighbors, it turns off
+					//If a cell is off, and has no neighbors,            it turns on 
+
+					/*
+						0  1  2  3
+						4  5  6  7
+						8  9  10 11
+						12 13 14 15
+
+						0  1  2  3  4
+						5  6  7  8  9
+						10 11 12 13 14
+						15 16 17 18 19
+						20 21 22 23 24
+					*/
+
+					let neighborsMatrix = [];
+
+					for (let i = 0; i < 16; i++) {
+						//Get number of neighbors for this cell
+						let neighbors = 0;
+						//North
+						if (this._cellsMatrix[i-4] == 1) {
+							neighbors++
+						}
+						//North West
+						if ( (this._cellsMatrix[i-3] == 1) && !rightRow.includes(i) ) {
+							neighbors++
+						}	
+						//West
+						if ((this._cellsMatrix[i+1] == 1) && !rightRow.includes(i) ) {
+							neighbors++
+						}		
+						//South West
+						if ((this._cellsMatrix[i+5] == 1) && !rightRow.includes(i) ) {
+							neighbors++
+						}			
+						//South
+						if (this._cellsMatrix[i+4] == 1) {
+							neighbors++
+						}
+						//South East
+						if ((this._cellsMatrix[i+3] == 1) && !leftRow.includes(i) ) {
+							neighbors++
+						}	
+						//East
+						if ((this._cellsMatrix[i-1] == 1) && !leftRow.includes(i) ) {
+							neighbors++
+						}	
+						//North East
+						if ((this._cellsMatrix[i-5] == 1) && !leftRow.includes(i) ) {
+							neighbors++
+						}	
+
+						neighborsMatrix[i] = neighbors																														
+					}
+
+					for (let i = 0; i < 16; i++) {
+						//Update matrix
+						if ((this._cellsMatrix[i] == 1) && (neighborsMatrix[i] > 2)) {
+							this._cellsMatrix[i] = 0
+						}	
+						if ((this._cellsMatrix[i] == 0) && (neighborsMatrix[i] == 0)) {
+							this._cellsMatrix[i] = 1
+						}
+					}
+				}	
 
 				get gridDimension() {
     				return this._gridDimension;
@@ -226,17 +315,11 @@
 				}
 				return cellsMatrix
 			}
-			///
-			///
-			///
-			///
-			///
-			///
-			///
-			///
-			///
+
 			function setGeo() {
 				//This should be a map() (?)
+				//This should basically go away once you store the actual material objects in the cell classes
+				//So don't worry about referencing global vars for now
 				for (let i = 0; i < (gridDimension ** 2); i++) {
 					materials[i].emissive.setHSL(cellsMatrix[i].hue, cellsMatrix[i].sat, cellsMatrix[i].lum)
 				}
@@ -251,17 +334,6 @@
 					}
 				}
 			}		
-
-			//function reverseCells() {
-			//	for (let i = 0; i < (gridDimension ** 2); i++) {
-			//		if (cellsMatrix[i] == 1) {
-			//			cellsMatrix[i] = 0
-			//		}
-			//		else {
-			//			cellsMatrix[i] = 1
-			//		}
-			//	}
-			//}
 
 			function evolveCells() {
 				//If a cell is on,  and has three or more neighbors, it turns off
@@ -355,10 +427,19 @@
 					materials.push( new THREE.MeshLambertMaterial( { color: 0x202020 } ) )
 				}
 
-				//let cellTest = new CellEcosystem(50,10,2,50);
-				//cellTest.testEdges();
-				//cellTest.randomColor(0.0);
+				//
+				//
+				//
+				let cellTest = new CellEcosystem(50,10,2,50);
+				cellTest.testEdges();
+				cellTest.randomColor(0.0);
+				cellTest.setGeo();
 				//debugger;
+				cellTest.ageCells();
+				//debugger;
+				//
+				//
+				//
 
 				setEdges(gridDimension);
 				setGeo();
