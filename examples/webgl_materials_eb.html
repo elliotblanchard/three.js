@@ -131,10 +131,10 @@
 					const allEdges = [...this._edges.topRow, ...this._edges.rightRow, ...this._edges.bottomRow, ...this._edges.leftRow];
 					for (let i = 0; i < (this._gridDimension ** 2); i++) {
 						if (allEdges.includes(i)) {	
-							materials[i].emissive.setHSL(0.0, 0.0, 1.0)
+							this._cellsMatrix[i].material.emissive.setHSL(0.0, 0.0, 1.0)
 						}
 						else {
-							materials[i].emissive.setHSL(0.0, 0.0, 0.0)
+							this._cellsMatrix[i].material.emissive.setHSL(0.0, 0.0, 0.0)
 						}
 					}
 				}	
@@ -149,10 +149,12 @@
 							this._cellsMatrix[i].sat = Math.random();
 							this._cellsMatrix[i].lum = Math.random();
 							this._cellsMatrix[i].age = 0;
+							this._cellsMatrix[i].material.emissive.setHSL(this._cellsMatrix[i].hue, this._cellsMatrix[i].sat, this._cellsMatrix[i].lum)
 						}
 					}
 				}
 
+				/*
 				setGeo(materials) {
 					//This should be a map() (?)
 					//This should basically go away once you store the actual material objects in the cell classes
@@ -161,7 +163,8 @@
 						this._cellsMatrix[i].material.emissive.setHSL(this._cellsMatrix[i].hue, this._cellsMatrix[i].sat, this._cellsMatrix[i].lum)
 					}
 				}
-
+				*/
+				
 				ageCells() {
 					//Updates cell ages for all active cells and dims their luminosity
 					//Should be map
@@ -169,6 +172,7 @@
 						this._cellsMatrix[i].age++;
 						if (this._cellsMatrix[i].lum > 0) {
 							this._cellsMatrix[i].lum -= (1.0 / this._cellLife)
+							this._cellsMatrix[i].material.emissive.setHSL(this._cellsMatrix[i].hue, this._cellsMatrix[i].sat, this._cellsMatrix[i].lum)
 						}
 					}
 				}																
@@ -394,7 +398,7 @@
 				//if class is passed in - gives this error:
 				//Uncaught TypeError: cellEcosystem.ageCells is not a function
 				cellEcosystem.ageCells();
-				cellEcosystem.setGeo(materials);
+				//cellEcosystem.setGeo(materials);
 				render();
 				stats.update();
 				composer.render();				
@@ -418,7 +422,7 @@
 				if (event.code == 'Space') {
 					
 					cellEcosystem.randomColor(0.75);
-					cellEcosystem.setGeo(materials);
+					//cellEcosystem.setGeo(materials);
 
 				}
 			});	
@@ -429,7 +433,7 @@
 
 			function bpmPulse() {
 				cellEcosystem.randomColor(0.75);
-				cellEcosystem.setGeo(materials);
+				//cellEcosystem.setGeo(materials);
 			}	
 			
 			//let cellEcosystem = new CellEcosystem(50,10,2,50);
