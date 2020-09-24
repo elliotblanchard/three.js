@@ -22,7 +22,7 @@
 			let container, stats;
 			let camera, scene, renderer, composer;
 			let pointLight;
-			let objects = [], materials = [];
+			//let objects = [], materials = [];
 
 			let params = {
 				exposure: 1,
@@ -33,12 +33,13 @@
 
 			//Define overall class for the cells matrix
 			class Cell {
-				constructor(material, hue, sat, lum, age) {
+				constructor(material, hue, sat, lum, age, neighbors) {
 					this._material = material;
     				this._hue = hue;
 					this._sat = sat;
 					this._lum = lum;
 					this._age = age;
+					this._neighbors = neighbors;
   				}	
 
 				get material() {
@@ -56,6 +57,9 @@
 				get age() {
     				return this._age;
   				}	
+				get neighbors() {
+    				return this._neighbors;
+  				}				  
 				set material(newMaterial) {
     				this._material = newMaterial;
  				}					 	
@@ -70,7 +74,10 @@
  				}			 	
 				set age(newAge) {
     				this._age = newAge;
- 				}			 			 			  		  			  
+ 				}	
+				set neighbors(newNeighbors) {
+    				this._neighbors = newNeighbors;
+ 				}				 		 			 			  		  			  
 			}
 
 			class CellEcosystem {
@@ -82,6 +89,7 @@
 					this._edges = { topRow: [], rightRow: [], bottomRow: [], leftRow: [] };	
 					this._cellsMatrix = Array(this.gridDimension ** 2);	
 					this._materials = Array(this.gridDimension ** 2);	
+					this._lumCutoff = 0.5; //Minimum luminance to be counted as a neighbor 
 
 					//Init the matrix (how do you return an object in a map)
 					for (let i = 0; i < this._cellsMatrix.length; i++) {
@@ -90,6 +98,7 @@
 							0.0, 
 							0.0, 
 							0.0, 
+							0,
 							0
 							);
 						let mesh = new THREE.Mesh( new THREE.CylinderGeometry( this._cellDepth, this._cellDepth, this._cellDepth, 16 ), this._cellsMatrix[i].material );
@@ -158,17 +167,66 @@
 				}
 				*/
 
+				minMax(val) {
+					if (val < 0) {
+						return 0
+					}
+					else if (val > (this._cellsMatrix.length - 1)){
+						return (this._cellsMatrix.length - 1)
+					}
+					else {
+						return val
+					}
+				}
+
 				ageCells() {
 					//Updates cell ages for all active cells and dims their luminosity
 					//Also checks for neighbors to evolve system
 					//Should be map
 
 					//find # neighbors who have lum over a certian cutoff, update neighbors field in cell (need to add)
+					for (let i = 0; i < this._cellsMatrix.length; i++) {
+						this._cellsMatrix[i]._neighbors = 0;
+						//North (i-dimension)
+						if (this._cellsMatrix[this.minMax(i-this._gridDimension)]._lum > this._lumCutoff) {
+							this._cellsMatrix[i]._neighbors++
+						}
+						//North West (i-(dimension-1))
+						if ( (this._cellsMatrix[this.minMax(i-(this._gridDimension-1))]._lum > this._lumCutoff) && !this._edges.rightRow.includes(i) ) {
+							this._cellsMatrix[i]._neighbors++
+						}	
+						//West (i+1)
+						if ((this._cellsMatrix[this.minMax(i+1)]._lum > this._lumCutoff) && !this._edges.rightRow.includes(i) ) {
+							this._cellsMatrix[i]._neighbors++
+						}		
+						//South West (i+(dimension+1))
+						if ((this._cellsMatrix[this.minMax(i+(this._gridDimension+1))]._lum > this._lumCutoff) && !this._edges.rightRow.includes(i) ) {
+							this._cellsMatrix[i]._neighbors++
+						}			
+						//South (i+dimension)
+						if (this._cellsMatrix[this.minMax(i+this._gridDimension)]._lum > this._lumCutoff) {
+							this._cellsMatrix[i]._neighbors++
+						}
+						//South East (i+(dimension-1))
+						if ((this._cellsMatrix[this.minMax(i+(this._gridDimension-1))]._lum > this._lumCutoff) && !this._edges.leftRow.includes(i) ) {
+							this._cellsMatrix[i]._neighbors++
+						}	
+						//East (i-1)
+						if ((this._cellsMatrix[this.minMax(i-1)]._lum > this._lumCutoff) && !this._edges.leftRow.includes(i) ) {
+							this._cellsMatrix[i]._neighbors++
+						}	
+						//North East (i-(dimension+1))
+						if ((this._cellsMatrix[this.minMax(i-(this._gridDimension+1))]._lum > this._lumCutoff) && !this._edges.leftRow.includes(i) ) {
+							this._cellsMatrix[i]._neighbors++
+						}
+						console.log(`Cell ${i} has ${this._cellsMatrix[i].neighbors} neighbors.`);							
+					}
+					debugger;
 
 					//update cells based on # of neighbors, rules, age
 					//If a cell is on,  and has three or more neighbors, it turns off
 					//If a cell is off, and has no neighbors,            it turns on 					
-					for (var i = 0; i < this._cellsMatrix.length; i++) {
+					for (let i = 0; i < this._cellsMatrix.length; i++) {
 						this._cellsMatrix[i].age++;
 						if (this._cellsMatrix[i].lum > 0) {
 							this._cellsMatrix[i].lum -= (1.0 / this._cellLife)
@@ -286,7 +344,7 @@
 				
 				scene = new THREE.Scene();
 
-				let cellEcosystem = new CellEcosystem(4,100,50,50);				
+				let cellEcosystem = new CellEcosystem(3,100,50,50);				
 
 				/*
 				// Materials (this needs to be moved into the class - and the materials array)
