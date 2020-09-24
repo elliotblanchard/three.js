@@ -185,6 +185,7 @@
 					//Should be map
 
 					//find # neighbors who have lum over a certian cutoff, update neighbors field in cell (need to add)
+					//grid counting starts at the BOTTOM and counts from LEFT to RIGHT
 					for (let i = 0; i < this._cellsMatrix.length; i++) {
 						this._cellsMatrix[i]._neighbors = 0;
 						//North (i-dimension)
@@ -219,9 +220,10 @@
 						if ((this._cellsMatrix[this.minMax(i-(this._gridDimension+1))]._lum > this._lumCutoff) && !this._edges.leftRow.includes(i) ) {
 							this._cellsMatrix[i]._neighbors++
 						}
-						console.log(`Cell ${i} has ${this._cellsMatrix[i].neighbors} neighbors.`);							
+						console.log(`Cell ${i} has ${this._cellsMatrix[i].neighbors} neighbors.`);
+						this._cellsMatrix[i].material.emissive.setHSL(1.0, 0.5, 0.2);
+						debugger;							
 					}
-					debugger;
 
 					//update cells based on # of neighbors, rules, age
 					//If a cell is on,  and has three or more neighbors, it turns off
