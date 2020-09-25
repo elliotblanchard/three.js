@@ -239,17 +239,15 @@
 						//Turn on/off according to neighbor count/rules
 						//If a cell is on,  and has three or more neighbors, it turns off
 						//If a cell is off, and has no neighbors,            it turns on 
-						if (this._cellsMatrix[i].neighbors > 3) {
-							this._cellsMatrix[i].hue = 0.0;	
-							this._cellsMatrix[i].sat = 0.0;
-							this._cellsMatrix[i].lum = 0.0;
-							this._cellsMatrix[i].age = 0;
+						if ((this._cellsMatrix[i].neighbors == 0) || (this._cellsMatrix[i].neighbors == 4)){
+							this._cellsMatrix[i].lum = this._cellsMatrix[i].lum / 2;
+							//this._cellsMatrix[i].age = 0;
 						}	
-						else if ((this._cellsMatrix[i].neighbors > 2) && (this._cellsMatrix[i].neighbors < 4)) {
+						else if ((this._cellsMatrix[i].neighbors == 2) || (this._cellsMatrix[i].neighbors == 2)) {
 							//console.log("More than one neighbor.");
 							this._cellsMatrix[i].hue = this.randomRange(0.67,0.88);
 							this._cellsMatrix[i].sat = 1.0;
-							this._cellsMatrix[i].lum = this.randomRange(0.15,0.75);
+							this._cellsMatrix[i].lum = this.randomRange(0.15,0.65);
 							this._cellsMatrix[i].age = 0;
 						}
 						this._cellsMatrix[i].material.emissive.setHSL(this._cellsMatrix[i].hue, this._cellsMatrix[i].sat, this._cellsMatrix[i].lum);					
