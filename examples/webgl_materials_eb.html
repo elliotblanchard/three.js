@@ -247,7 +247,7 @@
 						}	
 						else if ((this._cellsMatrix[i].neighbors > 2) && (this._cellsMatrix[i].neighbors < 4)) {
 							//console.log("More than one neighbor.");
-							this._cellsMatrix[i].hue = this.randomRange(0.78,0.98);
+							this._cellsMatrix[i].hue = this.randomRange(0.67,0.88);
 							this._cellsMatrix[i].sat = 1.0;
 							this._cellsMatrix[i].lum = this.randomRange(0.15,0.75);
 							this._cellsMatrix[i].age = 0;
@@ -384,6 +384,12 @@
 					addMesh(geometry, materials[i],cellEcosystem); //addMesh should be a class method
 				}
 				*/
+
+				// Grid
+
+				var helper = new THREE.GridHelper( 1000, 75, 0x101010, 0x101010 );
+				helper.position.y = - 75;
+				scene.add( helper );
 
 				// Lights
 				scene.add( new THREE.AmbientLight( 0x111111 ) );
